@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>字符动画舞</title>
+  <style>
+    #txtRef {
+      font-size: 12px;
+      letter-spacing: 4px;
+      font-family: simsun;
+      transform-origin: top left;
+      transform: scale(1);
+      line-height: 0;
+    }
+    #txtRef > p {
+      margin: 0;
+      line-height: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <video id="videoRef" preload controls type="video/mp4" style="display: none;"></video>
+  <canvas id="canvasRef" width="300" height="300"></canvas>
+
+  <!-- 选项配置区 -->
+  <section>
+    <input id="selectFileRef" onchange="uploadFile(event)" type="file" accept=".mp4,.jpg,.png" />
+    <br /><br />
+    <button id="playBtn" onclick="play()" disabled="true">播放</button>
+    <button onclick="pause()">停止</button>
+  </section>
+
+  <!-- 字符舞动区 -->
+  <main id="txtRef"></main>
+</body>
+<script>
+  const videoRef = document.querySelector('#videoRef');
+  const canvasRef = document.querySelector('#canvasRef');
+  const txtRef = document.querySelector('#txtRef');
+
+  // 画布大小
+  const CANVAS_SIZE = 300;
+
+  const ctx = canvasRef.getContext('2d');
+
+  window.onload = () => {
+    ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+    videoRef.addEventListener('play', timerCallback)
+  }
+
+  function uploadFile(event) {
+    URL.revokeObjectURL(videoRef.src);
+    const file = event.target.files[0];
+    if (/^image\/*/.test(file.type)) {
+      document.querySelector('#playBtn').disabled = true;
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = function (event) {
+        const img = new Image(); // 储存图片信息
+        img.src = reader.result;
+        img.onload = initImage.bind(this, img);
+      }
+    } else if (/^video\/*/.test(file.type)) {
+      videoRef.src = URL.createObjectURL(file);
+      videoRef.oncanplay = (event) => {
+        document.querySelector('#playBtn').disabled = false;
+        computeFrame();
+      }
+    }
+  }
+
+  function initImage(img) {
+    const rate = img.width / img.height;
+    canvasRef.width = img.width = rate > 1 ? CANVAS_SIZE : Math.round(CANVAS_SIZE * rate);
+    canvasRef.height = img.height = rate > 1 ? Math.round(CANVAS_SIZE / rate) : CANVAS_SIZE;
+    setTimeout(() => {
+      ctx.drawImage(img, 0, 0, img.width, img.height);
+      const imgData = ctx.getImageData(0, 0, img.width, img.height);
+      renderChartsByImageData(imgData, img.width, img.height);
+    }, 0)
+  }
+
+  /** 获取灰度值 */
+  function getGray(r, g, b) {
+    return 0.299 * r + 0.578 * g + 0.114 * b;
+  }
+
+  /** 根据灰度值获取符号 */
+  function getTextByGray(g) {
+    const strArray = ['.', ',', ':', ';', '=', 'c', '*', '+', 'm', '%', '$', '#', '@'];
+    const spacing = +(255 / strArray.length).toFixed();
+    const targetNum = strArray.findIndex((char, index) => {
+      if (g >= index * spacing && g <= (index + 1) * spacing) {
+        return true;
+      }
+    })
+    return strArray.at(-targetNum - 1)
+  }
+
+  function timerCallback() {
+    if (videoRef.paused || videoRef.ended) return;
+    computeFrame();
+    setTimeout(function () {
+      timerCallback();
+    }, 20);
+  }
+
+  /** 视频映射画布，渲染字符 */
+  function computeFrame() {
+    const rate = videoRef.videoWidth / videoRef.videoHeight;
+    canvasRef.width = rate > 1 ? CANVAS_SIZE : Math.round(CANVAS_SIZE * rate);
+    canvasRef.height = rate > 1 ? Math.round(CANVAS_SIZE / rate) : CANVAS_SIZE;
+    const { width, height } = canvasRef;
+    ctx.drawImage(videoRef, 0, 0, width, height);
+    const imgData = ctx.getImageData(0, 0, width, height);
+    renderChartsByImageData(imgData, width, height);
+  }
+
+  function renderChartsByImageData(imgData, width, height) {
+    html = '';
+    // 2为精度
+    for (let i = 0; i < height; i = i + 2) {
+      let p = '<p>';
+      for (let j = 0; j < width; j = j + 2) {
+        const curPoint = (i * width + j) * 4; // ×4是因为，1为r，2为g，3为b，4为a，四个是一组rgba值
+        const [r, g, b] = imgData.data.slice(curPoint, curPoint + 3);
+        const gray = getGray(r, g, b); // 计算灰度值
+        // const color = `rgb(${r},${g},${b})`; // 保存像素点rgb值
+        p += getTextByGray(gray);
+      }
+      p += '</p>';
+      html += p;
+    }
+    txtRef.innerHTML = html;
+  }
+
+  function play() {
+    videoRef.play();
+    document.querySelector('#selectFileRef').disabled = true;
+  }
+
+  function pause() {
+    videoRef.pause();
+    document.querySelector('#selectFileRef').disabled = false;
+  }
+
+</script>
+
+</html>

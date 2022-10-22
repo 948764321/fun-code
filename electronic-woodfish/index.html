@@ -75,16 +75,23 @@
       />
     </main>
 
+    <audio id="wooden-fish-sound" preload src="https://down.ear0.com:3321/index/preview?soundid=19572&type=mp3&audio=sound.mp3"/>
+
     <script>
       const woodenFishElement = document.getElementById('wooden-fish');
+      const textBubbleSoundElement = document.getElementById('wooden-fish-sound');
       const textBubbleElement = document.getElementById('text-bubble');
 
       woodenFishElement.onmousedown = () => {
+        textBubbleSoundElement.load();
+        textBubbleSoundElement.play();
+
         const txtNode = document.createElement('span');
         txtNode.innerHTML = '功德 + 1';
 
         textBubbleElement.innerHTML = ''; // 清空子节点
         textBubbleElement.append(txtNode);
+        
       };
     </script>
   </body>

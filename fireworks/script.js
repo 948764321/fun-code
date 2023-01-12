@@ -1548,7 +1548,7 @@ function colorSky(speed) {
 	targetSkyColor.b = targetSkyColor.b / maxColorComponent * maxSkySaturation * intensity;
 	
 	// Animate changes to color to smooth out transitions.
-	const colorChange = 1;
+	const colorChange = 8;
 	currentSkyColor.r += (targetSkyColor.r - currentSkyColor.r) / colorChange * speed;
 	currentSkyColor.g += (targetSkyColor.g - currentSkyColor.g) / colorChange * speed;
 	currentSkyColor.b += (targetSkyColor.b - currentSkyColor.b) / colorChange * speed;

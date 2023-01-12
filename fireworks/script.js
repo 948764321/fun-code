@@ -24,7 +24,7 @@ const IS_HIGH_END_DEVICE = (() => {
 const MAX_WIDTH = 7680;
 const MAX_HEIGHT = 4320;
 const GRAVITY = 0.9; // Acceleration in px/s
-let simSpeed = 1;
+let simSpeed = 1.1;
 
 function getDefaultScaleFactor() {
 	if (IS_MOBILE) return 0.9;
@@ -51,12 +51,72 @@ const SKY_LIGHT_DIM = 1;
 const SKY_LIGHT_NORMAL = 2;
 
 const COLOR = {
-	Red: '#ff0043',
+	Red: '#ff4d4f',
 	Green: '#14fc56',
 	Blue: '#1e7fff',
 	Purple: '#e60aff',
 	Gold: '#ffbf36',
-	White: '#ffffff'
+	White: '#ffffff',
+	Red1: '#fff1f0',
+	Red2: '#ffccc7',
+	Red3: '#ffa39e',
+	Red4: '#ff7875',
+	Red5: '#ff4d4f',
+	Red6: '#f5222d',
+	Red7: '#cf1322',
+	Red8: '#a8071a',
+	Red9: '#820014',
+	Red10: '#5c0011',
+	// Green1: '#f6ffed',
+	// Green2: '#d9f7be',
+	Green3: '#b7eb8f',
+	Green4: '#95de64',
+	Green5: '#73d13d',
+	Green6: '#52c41a',
+	Green7: '#389e0d',
+	Green8: '#237804',
+	Green9: '#135200',
+	Green10: '#092b00',
+	// Blue1: '#e6f4ff',
+	// Blue2: '#bae0ff',
+	Blue3: '#91caff',
+	Blue4: '#69b1ff',
+	Blue5: '#4096ff',
+	Blue6: '#1677ff',
+	Blue7: '#0958d9',
+	Blue8: '#003eb3',
+	Blue9: '#002c8c',
+	Blue10: '#001d66',
+	// Gold1: '#fffbe6',
+	// Gold2: '#fff1b8',
+	Gold3: '#ffe58f',
+	Gold4: '#ffd666',
+	Gold5: '#ffc53d',
+	Gold6: '#faad14',
+	Gold7: '#d48806',
+	Gold8: '#ad6800',
+	Gold9: '#874d00',
+	Gold10: '#613400',
+	// Purple1: '#f9f0ff',
+	// Purple2: '#efdbff',
+	Purple3: '#d3adf7',
+	Purple4: '#b37feb',
+	Purple5: '#9254de',
+	Purple6: '#722ed1',
+	Purple7: '#531dab',
+	Purple8: '#391085',
+	Purple9: '#22075e',
+	Purple10: '#120338',
+	// Magenta1: '#fff0f6',
+	// Magenta2: '#ffd6e7',
+	Magenta3: '#ffadd2',
+	Magenta4: '#ff85c0',
+	Magenta5: '#f759ab',
+	Magenta6: '#eb2f96',
+	Magenta7: '#c41d7f',
+	Magenta8: '#9e1068',
+	Magenta9: '#780650',
+	Magenta10: '#520339',
 };
 
 // Special invisible color (not rendered, and therefore not in COLOR map)
@@ -102,9 +162,6 @@ function toggleFullscreen() {
 fscreen.addEventListener('fullscreenchange', () => {
 	store.setState({ fullscreen: isFullscreen() });
 });
-
-
-
 
 // Simple state container; the source of truth.
 const store = {
@@ -525,6 +582,7 @@ COLOR_CODES.forEach(hex => {
 		b: parseInt(hex.substr(5, 2), 16),
 	};
 });
+
 
 // Get a random color.
 function randomColorSimple() {
@@ -1366,7 +1424,7 @@ function render(speed) {
 	const height = stageH;
 	const trailsCtx = trailsStage.ctx;
 	const mainCtx = mainStage.ctx;
-	
+
 	if (skyLightingSelector() !== SKY_LIGHT_NONE) {
 		colorSky(speed);
 	}
@@ -1490,7 +1548,7 @@ function colorSky(speed) {
 	targetSkyColor.b = targetSkyColor.b / maxColorComponent * maxSkySaturation * intensity;
 	
 	// Animate changes to color to smooth out transitions.
-	const colorChange = 10;
+	const colorChange = 1;
 	currentSkyColor.r += (targetSkyColor.r - currentSkyColor.r) / colorChange * speed;
 	currentSkyColor.g += (targetSkyColor.g - currentSkyColor.g) / colorChange * speed;
 	currentSkyColor.b += (targetSkyColor.b - currentSkyColor.b) / colorChange * speed;
@@ -2111,7 +2169,7 @@ const Spark = {
 
 
 const soundManager = {
-	baseURL: 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/329180/',
+	baseURL: './lib/assets/',
 	ctx: new (window.AudioContext || window.webkitAudioContext),
 	sources: {
 		lift: {

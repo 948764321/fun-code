@@ -414,6 +414,8 @@ const nodeKeyToHelpKey = {
 // Render app UI / keep in sync with state
 const appNodes = {
 	countDownContainer: '.count-down',
+	tipContainer: '.tip',
+	messageContainer: '.message',
 	stageContainer: '.stage-container',
 	canvasContainer: '.canvas-container',
 	controls: '.controls',
@@ -862,7 +864,10 @@ function init() {
 	// Remove loading state
 	document.querySelector('.loading-init').remove();
 	appNodes.stageContainer.classList.remove('remove');
+
 	appNodes.countDownContainer.classList.remove('remove');
+	appNodes.messageContainer.classList.remove('remove');
+	appNodes.tipContainer.classList.remove('remove');
 	
 	// Populate dropdowns
 	function setOptionsForSelect(node, options) {

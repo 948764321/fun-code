@@ -372,7 +372,9 @@ body {
   transform: translate3d(-50%, 0, 0);
 }
 
-.count-down h1,h3,h4 {
+.count-down h1,
+h3,
+h4 {
   width: 100%;
   background: linear-gradient(315deg, #42d392 25%, #647eff);
   background: -webkit-linear-gradient(315deg, #42d392 25%, #647eff);
@@ -382,6 +384,9 @@ body {
   line-height: 1.25;
   text-align: center;
   letter-spacing: -1.5px;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
 }
 
 .count-down h1 {
@@ -408,12 +413,40 @@ body {
     font-size: 40px;
     letter-spacing: -.5px;
   }
+
   .count-down h3 {
     font-size: 20px;
     letter-spacing: -.5px;
   }
+
   .count-down h4 {
     font-size: 14px;
     letter-spacing: -.5px;
   }
+}
+
+.tip {
+  position: absolute;
+  bottom: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: 2s linear 0s infinite alternate breathe;
+  user-select: none;
+}
+@keyframes breathe {
+  0% {
+    opacity: 0.1;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.message {
+  position: absolute;
+  right: 20px;
+  top: 40%;
+  writing-mode: vertical-lr;
+  color: rgb(255 255 255 / 60%);
 }

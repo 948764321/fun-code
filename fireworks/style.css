@@ -110,7 +110,9 @@ body {
   left: 0;
   right: 0;
   background-color: rgba(0, 0, 0, .42);
-  transition: opacity .3s, visibility .3s
+  transition: opacity .3s, visibility .3;
+  backdrop-filter: blur(3px);
+  z-index: 1;
 }
 
 .menu__inner-wrap {

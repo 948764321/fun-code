@@ -2,7 +2,7 @@
 const node = document.querySelector('.count-down-time');
 
 const freshTime = () => {
-  const endTime = new Date("2023/1/22,00:00:00");//结束时间
+  const endTime = new Date("2024/02/10,00:00:00");//结束时间
   const nowTime = new Date();//当前时间
   const leftTime = parseInt((endTime.getTime() - nowTime.getTime()) / 1000);
 

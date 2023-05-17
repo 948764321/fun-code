@@ -7,15 +7,18 @@
     <title>电子木鱼</title>
   </head>
   <style>
-    body {
-      margin: 0;
-      padding: 0;
-      color: #ffffff;
-
+    :root {
       --slide-length: 300px;
       --slide-length-negative: -300px;
       --text-bubble-area-height: 360px;
     }
+
+    body {
+      margin: 0;
+      padding: 0;
+      color: #ffffff;
+    }
+
     .main {
       display: flex;
       flex-direction: column;
@@ -26,15 +29,18 @@
       background-color: #000;
       user-select: none;
     }
+
     .wooden-fish {
       width: 80%;
       max-height: 60%;
       object-fit: contain;
       transition: all 0.1s;
     }
-    .wooden-fish:active {
+
+    .wooden-fish.active {
       transform: scale(0.97);
     }
+
     .text-bubble-area {
       display: flex;
       justify-content: flex-end;
@@ -44,21 +50,93 @@
       font-size: 64px;
       overflow: hidden;
     }
+
     .text-bubble-area > span {
       animation: slide ease-out 2s;
       transform: translateY(100%);
     }
+
     @keyframes slide {
       0% {
         transform: translateY(0%);
         opacity: 1;
       }
+
       100% {
         opacity: 0;
         transform: translateY(var(--slide-length-negative));
       }
     }
   </style>
+
+  <script>
+    const soundManager = {
+      baseURL: './lib/assets/',
+      ctx: new (window.AudioContext || window.webkitAudioContext)(),
+      sources: {
+        woodfish: {
+          volume: 1,
+          fileNames: ['woodfish.mp3'],
+          buffers: [],
+        },
+      },
+      preload() {
+        const allFilePromises = [];
+        function checkStatus(response) {
+          if (response.status >= 200 && response.status < 300) {
+            return response;
+          }
+          const customError = new Error(response.statusText);
+          customError.response = response;
+          throw customError;
+        }
+        const types = Object.keys(this.sources);
+        types.forEach((type) => {
+          const source = this.sources[type];
+          const { fileNames } = source;
+          const filePromises = [];
+          fileNames.forEach((fileName) => {
+            const fileURL = this.baseURL + fileName;
+            // Promise will resolve with decoded audio buffer.
+            const promise = fetch(fileURL)
+              .then(checkStatus)
+              .then((response) => response.arrayBuffer())
+              .then(
+                (data) =>
+                  new Promise((resolve) => {
+                    this.ctx.decodeAudioData(data, resolve);
+                  })
+              );
+
+            filePromises.push(promise);
+            allFilePromises.push(promise);
+          });
+
+          Promise.all(filePromises).then((buffers) => {
+            source.buffers = buffers;
+          });
+        });
+
+        return Promise.all(allFilePromises);
+      },
+      playSound(type) {
+        const source = this.sources[type];
+        if (!source) {
+          throw new Error(`Sound of type "${type}" doesn't exist.`);
+        }
+        const initialVolume = source.volume;
+        const gainNode = this.ctx.createGain();
+        gainNode.gain.value = initialVolume;
+
+        const bufferSource = this.ctx.createBufferSource();
+        bufferSource.buffer = source.buffers[0];
+        bufferSource.connect(gainNode);
+        gainNode.connect(this.ctx.destination);
+        bufferSource.start(0);
+      },
+    };
+    soundManager.preload();
+  </script>
   <body>
     <!-- 文字区域 -->
     <main class="main">
@@ -70,51 +148,36 @@
         class="wooden-fish"
         src="data:image/png;base64,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"
         alt="木鱼"
-        oncontextmenu="return false"
       />
     </main>
 
-    <audio id="wooden-fish-sound" preload src="https://down.ear0.com:3321/index/preview?soundid=19572&type=mp3&audio=sound.mp3" />
-
     <script>
       const woodenFishElement = document.getElementById('wooden-fish');
-      const textBubbleSoundElement = document.getElementById('wooden-fish-sound');
       const textBubbleElement = document.getElementById('text-bubble');
 
-      woodenFishElement.onmousedown = throttle(() => {
-        textBubbleSoundElement.play();
+      woodenFishElement.oncontextmenu = (e) => e.preventDefault();
 
+      const knock = (event) => {
+        if (event instanceof TouchEvent) {
+          event.preventDefault();
+        }
         const txtNode = document.createElement('span');
+        soundManager.playSound('woodfish');
         txtNode.innerHTML = '功德 + 1';
-
-        textBubbleElement.innerHTML = ''; // 清空子节点
+        textBubbleElement.innerHTML = '';
         textBubbleElement.append(txtNode);
-      }, 400);
-
-      function throttle(func, wait) {
-        let previous = 0;
-        let context, args, time, remaining;
-
-        return function () {
-          let now = +new Date();
-          context = this;
-          args = arguments;
-          remaining = wait - (now - previous); // 剩余的还需要等待的时间
-          if (remaining <= 0) {
-            func.apply(context, args);
-            previous = now; // 重置“上一次执行”的时间
-          } else {
-            if (time) {
-              clearTimeout(time);
-            }
-            time = setTimeout(() => {
-              func.apply(context, args);
-              time = null;
-              previous = +new Date(); // 重置“上一次执行”的时间
-            }, remaining); //等待还需等待的时间
-          }
-        };
+        woodenFishElement.classList.add('active');
       }
+
+      const endKnock = () => {
+        woodenFishElement.classList.remove('active');
+      }
+
+      woodenFishElement.onmousedown = knock;
+      woodenFishElement.onmouseup = endKnock;
+
+      woodenFishElement.ontouchstart = knock;
+      woodenFishElement.ontouchend = endKnock;
     </script>
   </body>
 </html>

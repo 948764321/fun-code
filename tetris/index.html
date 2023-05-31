@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Tetris</title>
+    <link href="./lib/style/index.css" rel="stylesheet" />
+    <link href="https://cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animatelo/1.0.3/animatelo.min.js"></script>
+  </head>
+  <body v-scope="{ emptyElementList }">
+    <div id="outer-board">
+      <div v-if="store.bannerVisible" id="banner">
+        <div>
+          <div id="message">{{ store.message }}</div>
+          <div id="new-game" @click="store.newGame">点击开始!</div>
+        </div>
+      </div>
+
+      <div id="board">
+        <div class="empty" :key="index" v-for="(empty, index) in emptyElementList">
+          <div class="inner-tile">
+            <div class="inner-inner-tile"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="stats">
+        <div class="labels">
+          分数
+          <div class="frame" id="score">{{ store.score }}</div>
+        </div>
+      </div>
+
+      <div id="keypad">
+        <div class="keypad-left"></div>
+        <div class="keypad-right">
+          <button class="btn btn-rounded btn-left" @click="store.leftPress">
+            <i class="fa fas fa-arrow-left"></i>
+          </button>
+          <button class="btn btn-rounded btn-right" @click="store.rightPress">
+            <i class="fa fas fa-arrow-right"></i>
+          </button>
+          <button class="btn btn-rounded btn-rotate" @click="store.rotatePress">
+            <i class="fa fas fa-undo flipx"></i>
+          </button>
+          <button class="btn btn-rounded btn-down" @click="store.downPress">
+            <i class="fa fas fa-arrow-down"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script type="module">
+    import { createApp, reactive, nextTick } from 'https://unpkg.com/petite-vue?module';
+    import useTetrisBoard from './lib/js/index.mjs';
+
+    const store = reactive({
+      message: 'Tetris',
+      score: 0,
+      bannerVisible: true,
+
+      newGame: null,
+      downPress: null,
+      rotatePress: null,
+      leftPress: null,
+      rightPress: null,
+    });
+
+    createApp({
+      store,
+      emptyElementList: new Array(160).fill(1),
+    }).mount();
+
+    nextTick(() => {
+      const container = document.querySelector('#board');
+      const blockElement = container.children[0];
+
+      const { Board } = useTetrisBoard({ container, blockElement });
+
+      const board = new Board();
+
+      board.onScoreChange = (value) => (store.score = value);
+      board.onMessageChange = (value) => (store.message = value);
+      board.onBannerVisibleChange = (value) => (store.bannerVisible = value);
+
+      store.newGame = () => board.newGame();
+      store.downPress = () => board.downKeyPress();
+      store.rotatePress = () => board.upKeyPress();
+      store.leftPress = () => board.leftKeyPress();
+      store.rightPress = () => board.rightKeyPress();
+
+      document.documentElement.addEventListener('keydown', (event) => {
+        switch (event.which) {
+          case 37:
+            board.leftKeyPress();
+            break;
+          case 38:
+            board.upKeyPress();
+            break;
+          case 39:
+            board.rightKeyPress();
+            break;
+          case 40:
+            board.downKeyPress();
+            break;
+          case 78:
+            board.newGame();
+            break;
+          default:
+            break;
+        }
+        event.preventDefault(); // prevent the default action (scroll / move caret)
+      });
+    });
+  </script>
+  <script>
+    const resizeObserver = new ResizeObserver(() => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const ratio = width / height;
+
+      const ORIGIN_WIDTH = 365;
+      const ORIGIN_HEIGHT = 680;
+      const ORIGIN_RATIO = ORIGIN_WIDTH / ORIGIN_HEIGHT;
+
+      let scale = 1;
+      let origin = 'top';
+      if (width < ORIGIN_WIDTH && height < ORIGIN_HEIGHT) {
+        origin = 'top left';
+        scale = ratio > ORIGIN_RATIO ? height / ORIGIN_HEIGHT : width / ORIGIN_WIDTH;
+      } else if (width < ORIGIN_WIDTH || height < ORIGIN_HEIGHT) {
+        scale = ratio > ORIGIN_RATIO ? height / ORIGIN_HEIGHT : width / ORIGIN_WIDTH;
+        origin = ratio > ORIGIN_RATIO ? 'top' : 'top left';
+      }
+
+      document.documentElement.style.setProperty('--scale', scale);
+      document.documentElement.style.setProperty('--origin', origin);
+    });
+    resizeObserver.observe(document.documentElement);
+  </script>
+</html>
